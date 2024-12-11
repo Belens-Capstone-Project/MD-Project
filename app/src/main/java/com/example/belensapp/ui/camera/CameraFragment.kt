@@ -105,6 +105,8 @@ class CameraFragment : Fragment() {
         }
     }
 
+
+
     private fun openGallery() {
         val uploadPhotoIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         uploadPhotoIntent.type = "image/*"

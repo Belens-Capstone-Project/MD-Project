@@ -21,16 +21,21 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import android.content.Context
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class ResultFragment : Fragment() {
+    private lateinit var database: DatabaseReference
 
     companion object {
         fun newInstance(predictResponse: PredictResponse, imageUri: Uri): ResultFragment {
             val fragment = ResultFragment()
-            val bundle = Bundle()
-            bundle.putParcelable("predict_response", predictResponse)
-            bundle.putString("image_uri", imageUri.toString())
+            val bundle = Bundle().apply {
+                putParcelable("predict_response", predictResponse)
+                putString("image_uri", imageUri.toString())
+            }
             fragment.arguments = bundle
             return fragment
         }
@@ -45,11 +50,9 @@ class ResultFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentResultBinding.inflate(inflater, container, false)
-
-        // Initialize HistoryViewModel early
         historyViewModel = ViewModelProvider(this).get(HistoryViewModel::class.java)
+        database = FirebaseDatabase.getInstance().getReference("predictcount")
 
-        // Show loading state
         showLoading(true)
 
         lifecycleScope.launch {
@@ -58,14 +61,16 @@ class ResultFragment : Fragment() {
                 val imageUriString = arguments?.getString("image_uri")
 
                 withContext(Dispatchers.Main) {
-                    // Tambahkan pemanggilan checkAndUnlockBadges() di sini
-                    checkAndUnlockBadges()
+                    // Update scan count and badges
+                    updateUserScanCount()
 
+                    // Display Prediction Text
                     binding.tvPrediction.text = predictResponse?.data?.prediction ?: "Prediction not available"
 
-                    // Display nutrition data
+                    // Display Nutrition Data
                     displayNutritionData(predictResponse?.data?.gizi)
 
+                    // Load Image or Default Image
                     if (imageUriString != null) {
                         val imageUri = Uri.parse(imageUriString)
                         loadImage(imageUri)
@@ -88,13 +93,11 @@ class ResultFragment : Fragment() {
         return binding.root
     }
 
-    // Fungsionalitas untuk menampilkan dan menyembunyikan loading
     private fun showLoading(isLoading: Boolean) {
         binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.ivImageResult.visibility = if (isLoading) View.GONE else View.VISIBLE
     }
 
-    // Memuat gambar dari URI
     private fun loadImage(imageUri: Uri) {
         Glide.with(requireContext())
             .load(imageUri)
@@ -109,6 +112,87 @@ class ResultFragment : Fragment() {
             .into(binding.ivImageResult)
     }
 
+    private fun updateUserScanCount() {
+        val sharedPref = requireActivity().getSharedPreferences("user_pref", AppCompatActivity.MODE_PRIVATE)
+        val userToken = sharedPref.getString("user_token", null)
+
+        if (!userToken.isNullOrEmpty()) {
+            // Perbaiki path untuk memastikan data disimpan di predictcount/{userToken}/scan-count
+            val userRef = database.child("predictcount").child(userToken).child("scan-count")
+
+            // Mendapatkan scan_count saat ini dari Firebase
+            userRef.get().addOnSuccessListener { snapshot ->
+                val currentScanCount = snapshot.getValue(Int::class.java) ?: 0
+                val newScanCount = currentScanCount + 1
+
+                // Memperbarui scan count di Firebase
+                userRef.setValue(newScanCount).addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        Log.d("Firebase", "Scan count updated successfully: $newScanCount")
+                        // Kirim newScanCount ke fungsi checkAndUnlockBadges
+                        checkAndUnlockBadges(newScanCount)
+                    } else {
+                        Log.e("Firebase", "Failed to update scan count")
+                    }
+                }
+            }.addOnFailureListener {
+                Log.e("Firebase", "Failed to retrieve scan count", it)
+            }
+        } else {
+            Log.e("Firebase", "User token is null or empty")
+        }
+    }
+
+
+    private fun checkAndUnlockBadges(scanCount: Int) {
+        val newBadges = mutableListOf<String>()
+
+        when (scanCount) {
+            1 -> {
+                saveBadgeStatus(1, true)
+                newBadges.add("Sugar Novice")
+            }
+            5 -> {
+                saveBadgeStatus(2, true)
+                newBadges.add("Mindful Drinker")
+            }
+            10 -> {
+                saveBadgeStatus(3, true)
+                newBadges.add("Health Conscious")
+            }
+            20 -> {
+                saveBadgeStatus(4, true)
+                newBadges.add("Sugar Savvy")
+            }
+            50 -> {
+                saveBadgeStatus(5, true)
+                newBadges.add("Healthy Expert")
+            }
+        }
+
+        // Show the badge achievement dialog if new badges are unlocked
+        if (newBadges.isNotEmpty()) {
+            showBadgeAchievementDialog(newBadges)
+        }
+    }
+
+    private fun saveBadgeStatus(badgeNumber: Int, isAchieved: Boolean) {
+        val sharedPref = requireContext().getSharedPreferences("badge_status", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putBoolean("badge_$badgeNumber", isAchieved)
+            apply()
+        }
+    }
+
+    private fun showBadgeAchievementDialog(badges: List<String>) {
+        val badgeNames = badges.joinToString(", ")
+        val dialogBuilder = AlertDialog.Builder(requireContext())
+        dialogBuilder.setTitle("🏆 Badge Achievement!")
+        dialogBuilder.setMessage("Congratulations! You've unlocked:\n$badgeNames")
+        dialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+        dialogBuilder.create().show()
+    }
+
     private suspend fun saveToHistoryWithTimeout(predictResponse: PredictResponse?, imageUri: Uri) {
         val sharedPref = requireActivity().getSharedPreferences("user_pref", AppCompatActivity.MODE_PRIVATE)
         val userToken = sharedPref.getString("user_token", null)
@@ -120,7 +204,6 @@ class ResultFragment : Fragment() {
                 )
             )
 
-            // Add timeout of 10 seconds for save operation
             val result = withTimeoutOrNull(10000L) {
                 try {
                     historyViewModel.savePredictionHistory(userToken, updatedResponse)
@@ -175,81 +258,6 @@ class ResultFragment : Fragment() {
         binding.gradeC.visibility = View.GONE
         binding.gradeD.visibility = View.GONE
         binding.gradeE.visibility = View.GONE
-    }
-
-    // Fungsi untuk cek dan membuka badge berdasarkan jumlah scan
-    private fun checkAndUnlockBadges() {
-        val sharedPref = requireContext().getSharedPreferences("badge_status", Context.MODE_PRIVATE)
-        val scanCount = sharedPref.getInt("scan_count", 0) + 1
-
-        with(sharedPref.edit()) {
-            putInt("scan_count", scanCount)
-            apply()
-        }
-
-        val newBadges = mutableListOf<String>()
-
-        when {
-            scanCount == 1 -> {
-                saveBadgeStatus(1, true)
-                newBadges.add("Sugar Novice")
-            }
-            scanCount == 5 -> {
-                saveBadgeStatus(2, true)
-                newBadges.add("Mindful Drinker")
-            }
-            scanCount == 10 -> {
-                saveBadgeStatus(3, true)
-                newBadges.add("Health Conscious")
-            }
-            scanCount == 20 -> {
-                saveBadgeStatus(4, true)
-                newBadges.add("Sugar Savvy")
-            }
-            scanCount == 50 -> {
-                saveBadgeStatus(5, true)
-                newBadges.add("Healthy Expert")
-            }
-        }
-
-        if (newBadges.isNotEmpty()) {
-            showBadgeAchievementDialog(newBadges)
-        }
-    }
-
-    private fun showBadgeAchievementDialog(badges: List<String>) {
-        val badgeNames = badges.joinToString(", ")
-        val dialogBuilder = AlertDialog.Builder(requireContext())
-        dialogBuilder.setTitle("🏆 Badge Achievement!")
-        dialogBuilder.setMessage("Congratulations! You've unlocked:\n$badgeNames")
-        dialogBuilder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-        dialogBuilder.create().show()
-    }
-
-    private fun saveBadgeStatus(badgeNumber: Int, isAchieved: Boolean) {
-        val sharedPref = requireContext().getSharedPreferences("badge_status", Context.MODE_PRIVATE)
-        with(sharedPref.edit()) {
-            putBoolean("badge_$badgeNumber", isAchieved)
-            apply()
-        }
-    }
-
-    private fun updateScanCount() {
-        val sharedPref = requireActivity().getSharedPreferences("badge_status", AppCompatActivity.MODE_PRIVATE)
-        val scanCount = sharedPref.getInt("scan_count", 0) + 1
-
-        with(sharedPref.edit()) {
-            putInt("scan_count", scanCount)
-            apply()
-        }
-
-        when (scanCount) {
-            1 -> saveBadgeStatus(1, true)
-            5 -> saveBadgeStatus(2, true)
-            10 -> saveBadgeStatus(3, true)
-            20 -> saveBadgeStatus(4, true)
-            50 -> saveBadgeStatus(5, true)
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

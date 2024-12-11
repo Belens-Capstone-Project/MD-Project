@@ -5,30 +5,44 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import com.bumptech.glide.Glide
 import com.example.belensapp.R
 import com.example.belensapp.databinding.FragmentSettingsBinding
-import com.example.belensapp.ui.login.LoginActivity
+import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.card.MaterialCardView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import android.content.Intent
-import java.util.Locale
+import android.provider.MediaStore
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.Glide
+import com.example.belensapp.ui.login.LoginActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class SettingsFragment : Fragment() {
+
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: SettingsViewModel by viewModels {
-        object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val preferences = SettingsPreferences(requireContext())
-                @Suppress("UNCHECKED_CAST")
-                return SettingsViewModel(preferences) as T
+    private lateinit var darkModeSwitch: SwitchMaterial
+    private lateinit var languageCard: MaterialCardView
+    private lateinit var profileCard: MaterialCardView
+
+    private val pickImageResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == AppCompatActivity.RESULT_OK) {
+            val imageUri = result.data?.data
+            imageUri?.let {
+                binding.profileImage.setImageURI(imageUri)
+                // Save image uri or path to SharedPreferences or database as needed
             }
         }
     }
@@ -38,167 +52,262 @@ class SettingsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        val settingsViewModel = ViewModelProvider(this).get(SettingsViewModel::class.java)
+
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+        val root: View = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setupObservers()
-        setupClickListeners()
-        loadUserData()
-    }
-
-    private fun setupObservers() {
-        viewModel.uiState.observe(viewLifecycleOwner) { state ->
-            binding.darkModeSwitch.isChecked = state.isDarkMode
-            updateBadgeVisibility(state.badgeStatuses)
-            updateIconColors(state.isDarkMode)
-            applyDarkMode(state.isDarkMode)
+        val textView: TextView = binding.textSettings
+        settingsViewModel.text.observe(viewLifecycleOwner) {
+            textView.text = it
         }
 
-        viewModel.profileData.observe(viewLifecycleOwner) { profileData ->
-            binding.username.text = profileData.username
-            loadProfileImage(profileData.photoUrl)
+        // Initialize Dark Mode Switch
+        setupDarkModeSwitch()
+
+        // Update icon colors initially
+        updateIconColors()
+
+        // Language Change
+        languageCard = binding.cardLanguage
+        languageCard.setOnClickListener {
+            showLanguageChangeDialog()
         }
-    }
 
-    private fun setupClickListeners() {
-        with(binding) {
-            darkModeSwitch.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.updateDarkMode(isChecked)
-            }
-
-            cardLanguage.setOnClickListener {
-                showLanguageDialog()
-            }
-
-            cardChangeProfile.setOnClickListener {
-                findNavController().navigate(R.id.action_settingsFragment_to_profileFragment)
-            }
-
-            cardLogout.setOnClickListener {
-                showLogoutConfirmationDialog()
-            }
-
-            profileImage.setOnClickListener {
-                findNavController().navigate(R.id.action_settingsFragment_to_profileFragment)
-            }
+        // Profile Change
+        profileCard = binding.cardChangeProfile
+        profileCard.setOnClickListener {
+            findNavController().navigate(R.id.action_settingsFragment_to_profileFragment)
         }
-    }
 
-    private fun loadUserData() {
-        val preferences = SettingsPreferences(requireContext())
-        preferences.getUserToken()?.let { token ->
-            viewModel.loadUserProfile(token)
+        // Logout
+        val logoutCard: MaterialCardView = binding.cardLogout
+        logoutCard.setOnClickListener {
+            logoutUser()
+        }
+
+        updateBadgeColors(0)
+
+        // Load Profile Photo
+        loadProfilePhoto()
+
+        loadScanCount()
+        return root
+    }
+    private fun saveBadgeStatus(badgeNumber: Int, isAchieved: Boolean) {
+        val sharedPref = requireContext().getSharedPreferences("badge_status", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putBoolean("badge_$badgeNumber", isAchieved)
+            apply()
         }
     }
 
-    private fun showLanguageDialog() {
-        val languages = arrayOf("English", "Bahasa Indonesia")
-        AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.choose_language))
-            .setItems(languages) { _, which ->
-                val languageCode = if (which == 0) "en" else "id"
-                viewModel.updateLanguage(languageCode)
-                updateLocale(languageCode)
+    private fun getBadgeStatus(badgeNumber: Int): Boolean {
+        val sharedPref = requireContext().getSharedPreferences("badge_status", Context.MODE_PRIVATE)
+        return sharedPref.getBoolean("badge_$badgeNumber", false)
+    }
+
+    private fun updateBadgeColors(scanCount: Int) {
+        if (scanCount >= 1) {
+            binding.badge1Gray.visibility = View.GONE
+            binding.badge1Color.visibility = View.VISIBLE
+        }
+        if (scanCount >= 5) {
+            binding.badge2Gray.visibility = View.GONE
+            binding.badge2Color.visibility = View.VISIBLE
+        }
+        if (scanCount >= 10) {
+            binding.badge3Gray.visibility = View.GONE
+            binding.badge3Color.visibility = View.VISIBLE
+        }
+        if (scanCount >= 20) {
+            binding.badge4Gray.visibility = View.GONE
+            binding.badge4Color.visibility = View.VISIBLE
+        }
+        if (scanCount >= 50) {
+            binding.badge5Gray.visibility = View.GONE
+            binding.badge5Color.visibility = View.VISIBLE
+        }
+    }
+
+
+    private fun loadScanCount() {
+        val sharedPref = requireContext().getSharedPreferences("user_pref", Context.MODE_PRIVATE)
+        val userToken = sharedPref.getString("user_token", null) ?: return
+
+        val databaseRef = FirebaseDatabase.getInstance("https://belensapp-8eff1-default-rtdb.asia-southeast1.firebasedatabase.app")
+            .getReference("predictcount/predictcount/$userToken") // Update path ke predictcount
+
+        databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val scanCount = snapshot.child("scan-count").getValue(Int::class.java) ?: 0
+                    updateBadgeColors(scanCount) // Update badge visibility based on scan count
+                } else {
+                    // Default badge state if scan_count does not exist
+                    updateBadgeColors(0)
+                }
             }
-            .show()
-    }
 
-    private fun showLogoutConfirmationDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle(getString(R.string.logout_confirmation_title))
-            .setMessage(getString(R.string.logout_confirmation_message))
-            .setPositiveButton(getString(R.string.yes)) { _, _ ->
-                performLogout()
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error (optional)
+                Toast.makeText(requireContext(), "Failed to load scan count: ${error.message}", Toast.LENGTH_SHORT).show()
+                updateBadgeColors(0) // Default state on error
             }
-            .setNegativeButton(getString(R.string.no), null)
-            .show()
+        })
     }
 
-    private fun performLogout() {
-        viewModel.logout()
-        navigateToLogin()
+
+    private fun setupDarkModeSwitch() {
+        darkModeSwitch = binding.darkModeSwitch
+        // Load saved dark mode state
+        val sharedPref = requireContext().getSharedPreferences("app_pref", Context.MODE_PRIVATE)
+        val isDarkMode = sharedPref.getBoolean("is_dark_mode", false)
+        darkModeSwitch.isChecked = isDarkMode
+
+        darkModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            toggleDarkMode(isChecked)
+            updateIconColors()
+        }
     }
 
-    private fun updateLocale(languageCode: String) {
-        val locale = Locale(languageCode)
-        Locale.setDefault(locale)
-        val config = requireContext().resources.configuration
-        config.setLocale(locale)
-        requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
-
-        // Refresh the current fragment
-        findNavController().navigate(R.id.action_settingsFragment_self)
+    private fun saveDarkModeState(isEnabled: Boolean) {
+        val sharedPref = requireContext().getSharedPreferences("app_pref", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putBoolean("is_dark_mode", isEnabled)
+            apply()
+        }
     }
 
-    private fun applyDarkMode(isDarkMode: Boolean) {
-        AppCompatDelegate.setDefaultNightMode(
-            if (isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )
+    private fun toggleDarkMode(isEnabled: Boolean) {
+        if (isEnabled) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+        saveDarkModeState(isEnabled)
     }
 
-    private fun loadProfileImage(photoUrl: String?) {
-        Glide.with(requireContext())
-            .load(photoUrl ?: R.drawable.ic_launcher_foreground)
-            .circleCrop()
-            .into(binding.profileImage)
-    }
-
-    private fun updateIconColors(isDarkMode: Boolean) {
+    private fun updateIconColors() {
+        val isDarkMode = isDarkModeEnabled()
         val iconColor = if (isDarkMode) {
             requireContext().getColor(android.R.color.white)
         } else {
             requireContext().getColor(android.R.color.black)
         }
 
-        with(binding) {
-            languageIcon.setColorFilter(iconColor)
-            changeProfileIcon.setColorFilter(iconColor)
-            logoutIcon.setColorFilter(iconColor)
-            if (darkModeIcon != null) {  // Check if the view exists in your layout
-                darkModeIcon.setColorFilter(iconColor)
-            }
-        }
+        binding.languageIcon.setColorFilter(iconColor)
+        binding.changeProfileIcon.setColorFilter(iconColor)
+        binding.logoutIcon.setColorFilter(iconColor)
     }
 
-    private fun updateBadgeVisibility(badgeStatuses: Map<Int, Boolean>) {
-        badgeStatuses.forEach { (badgeNumber, isAchieved) ->
-            when (badgeNumber) {
-                1 -> {
-                    binding.badge1Gray.visibility = if (isAchieved) View.GONE else View.VISIBLE
-                    binding.badge1Color.visibility = if (isAchieved) View.VISIBLE else View.GONE
-                }
-                2 -> {
-                    binding.badge2Gray.visibility = if (isAchieved) View.GONE else View.VISIBLE
-                    binding.badge2Color.visibility = if (isAchieved) View.VISIBLE else View.GONE
-                }
-                3 -> {
-                    binding.badge3Gray.visibility = if (isAchieved) View.GONE else View.VISIBLE
-                    binding.badge3Color.visibility = if (isAchieved) View.VISIBLE else View.GONE
-                }
-                4 -> {
-                    binding.badge4Gray.visibility = if (isAchieved) View.GONE else View.VISIBLE
-                    binding.badge4Color.visibility = if (isAchieved) View.VISIBLE else View.GONE
-                }
-                5 -> {
-                    binding.badge5Gray.visibility = if (isAchieved) View.GONE else View.VISIBLE
-                    binding.badge5Color.visibility = if (isAchieved) View.VISIBLE else View.GONE
-                }
-            }
-        }
+    private fun isDarkModeEnabled(): Boolean {
+        val sharedPref = requireContext().getSharedPreferences("app_pref", Context.MODE_PRIVATE)
+        return sharedPref.getBoolean("is_dark_mode", false)
     }
 
-    private fun navigateToLogin() {
+    private fun showLanguageChangeDialog() {
+        val languages = arrayOf("English", "Bahasa Indonesia")
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle(getString(R.string.choose_language))
+        builder.setItems(languages) { _, which ->
+            when (which) {
+                0 -> changeLanguage("en")
+                1 -> changeLanguage("id")
+            }
+        }
+        builder.show()
+    }
+
+    private fun changeLanguage(languageCode: String) {
+        // Save selected language to SharedPreferences
+        val sharedPref = requireContext().getSharedPreferences("app_pref", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("selected_language", languageCode)
+            apply()
+        }
+
+        // Update locale configuration
+        val locale = java.util.Locale(languageCode)
+        java.util.Locale.setDefault(locale)
+        val config = requireContext().resources.configuration
+        config.setLocale(locale)
+        requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
+
+        // Show toast message
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.language_changed_to) + " $languageCode",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        // Refresh current fragment by navigating back to settings
+        findNavController().navigate(R.id.action_settingsFragment_self)
+    }
+
+    private fun logoutUser() {
+        // Logout from Firebase Authentication
+        FirebaseAuth.getInstance().signOut()
+
+        // Clear user data from SharedPreferences
+        val sharedPref = requireContext().getSharedPreferences("user_pref", AppCompatActivity.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            apply()
+        }
+
+        // Show logout confirmation
+        Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
+
+        // Navigate to Login Activity and clear activity stack
         val intent = Intent(requireContext(), LoginActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         startActivity(intent)
+
+        // Finish current activity
         requireActivity().finish()
+    }
+
+    private fun loadProfilePhoto() {
+        val sharedPref = requireContext().getSharedPreferences("user_pref", Context.MODE_PRIVATE)
+        val userToken = sharedPref.getString("user_token", null) ?: return
+
+        val databaseRef = FirebaseDatabase.getInstance("https://belensapp-8eff1-default-rtdb.asia-southeast1.firebasedatabase.app")
+            .getReference("user/$userToken")
+
+        databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    // Load and set username
+                    val username = snapshot.child("username").getValue(String::class.java) ?: "User"
+                    binding.username.text = username
+
+                    // Load profile photo
+                    val photoUrl = snapshot.child("photoUrl").getValue(String::class.java)
+                    if (!photoUrl.isNullOrEmpty()) {
+                        Glide.with(requireContext())
+                            .load(photoUrl)
+                            .circleCrop()
+                            .into(binding.profileImage)
+                    } else {
+                        // Set default image if no photo URL
+                        Glide.with(requireContext())
+                            .load(R.drawable.ic_launcher_foreground)
+                            .circleCrop()
+                            .into(binding.profileImage)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Set default username if loading fails
+                binding.username.text = "User"
+                Toast.makeText(requireContext(), "Failed to load profile: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     override fun onDestroyView() {
