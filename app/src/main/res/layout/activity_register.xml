@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.register.RegisterActivity">
+
+    <!-- ImageView untuk background tergantung mode -->
+    <ImageView
+        android:id="@+id/ivImagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/upload_photo"
+        android:scaleType="centerCrop"
+        android:src="@drawable/register_light"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="0dp" />
+
+    <ImageView
+        android:id="@+id/ivImagePreviewNight"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/upload_photo"
+        android:scaleType="centerCrop"
+        android:src="@drawable/register_dark"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="0dp" />
+
+    <!-- FrameLayout untuk form register -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp">
+
+        <!-- Form Register Layout -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:padding="32dp"
+            android:elevation="8dp">
+
+            <TextView
+                android:id="@+id/tvRegisterTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/jdlregister"
+                android:textSize="30sp"
+                android:textColor="@color/red_gradient_end"
+                android:textStyle="bold"
+                android:layout_marginBottom="15dp"
+                android:fontFamily="@font/outfitregular" />
+
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="382dp"
+                android:layout_height="72dp"
+                android:ems="10"
+                android:inputType="textEmailAddress"
+                android:fontFamily="@font/outfitregular"
+                android:hint="@string/email" />
+
+            <!-- Username Input -->
+            <EditText
+                android:id="@+id/etUsername"
+                android:layout_width="382dp"
+                android:layout_height="72dp"
+                android:ems="10"
+                android:inputType="text"
+                android:fontFamily="@font/outfitregular"
+                android:hint="@string/username" />
+
+            <!-- Password Input -->
+            <RelativeLayout
+                android:layout_width="382dp"
+                android:layout_height="72dp"
+                android:layout_marginBottom="20dp">
+
+                <EditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="textPassword"
+                    android:fontFamily="@font/outfitregular"
+                    android:hint="@string/password" />
+
+                <!-- ImageButton untuk toggle password visibility -->
+                <ImageButton
+                    android:id="@+id/btnPasswordVisibility"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="52dp"
+                    android:background="@null"
+                    android:src="@drawable/ic_visibility_off" />
+            </RelativeLayout>
+
+            <!-- Confirm Password Input -->
+            <RelativeLayout
+                android:layout_width="382dp"
+                android:layout_height="72dp"
+                android:layout_marginBottom="30dp">
+
+                <EditText
+                    android:id="@+id/etConfirmPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:ems="10"
+                    android:inputType="textPassword"
+                    android:fontFamily="@font/outfitregular"
+                    android:hint="@string/confirm_password" />
+
+                <!-- ImageButton untuk toggle confirm password visibility -->
+                <ImageButton
+                    android:id="@+id/btnConfirmPasswordVisibility"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="52dp"
+                    android:background="@null"
+                    android:src="@drawable/ic_visibility_off" />
+            </RelativeLayout>
+
+            <!-- Register Button -->
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/outfitregular"
+                android:text="@string/btnregister" />
+        </LinearLayout>
+    </FrameLayout>
+</RelativeLayout>
