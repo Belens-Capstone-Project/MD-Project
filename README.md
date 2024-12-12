@@ -28,7 +28,6 @@ To set up and run the application, ensure the following are installed on your lo
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/Belens-Capstone-Project/MD-Project
-   cd belens-app
    ```
 
 2. **Open the project in Android Studio**
