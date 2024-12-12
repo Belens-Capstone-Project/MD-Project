@@ -1,10 +1,4 @@
 package com.example.belensapp.ui.history
-
-<<<<<<< HEAD
-=======
-import android.net.Uri
-import android.util.Log
->>>>>>> 2379228ff7336242025d01380fc1ca01d99e0781
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
