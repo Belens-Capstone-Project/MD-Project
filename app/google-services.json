@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "344131703777",
+    "firebase_url": "https://belensapp-8eff1-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "belensapp-8eff1",
+    "storage_bucket": "belensapp-8eff1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344131703777:android:f5935fd5983ef74adc38a0",
+        "android_client_info": {
+          "package_name": "com.example.belensapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_CHKn-a8S3inuoMJMb1SqoVR8TiFFK5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

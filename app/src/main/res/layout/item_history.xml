@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:layout_marginBottom="5dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@android:color/darker_gray"
+    tools:context=".ui.history.HistoryFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/ivImageHistory"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:src="@drawable/ic_camera"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tvPrediction"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Prediction"
+        android:fontFamily="@font/outfitbold"
+        android:textSize="20sp"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/ivImageHistory"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
+        <!-- Grade Images -->
+        <ImageView
+            android:id="@+id/gradeA"
+            android:layout_width="124dp"
+            android:layout_height="47dp"
+            android:layout_marginEnd="216dp"
+            android:src="@drawable/grade_a"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tvPrediction"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"/>
+
+        <ImageView
+            android:id="@+id/gradeB"
+            android:layout_width="124dp"
+            android:layout_height="47dp"
+            android:layout_marginEnd="216dp"
+            android:src="@drawable/grade_b"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tvPrediction"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"/>
+
+        <ImageView
+            android:id="@+id/gradeC"
+            android:layout_width="124dp"
+            android:layout_height="47dp"
+            android:layout_marginEnd="216dp"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            android:src="@drawable/grade_c"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPrediction" />
+
+        <ImageView
+            android:id="@+id/gradeD"
+            android:layout_width="124dp"
+            android:layout_height="47dp"
+            android:layout_marginEnd="216dp"
+            android:src="@drawable/grade_d"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tvPrediction"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"/>
+
+        <ImageView
+            android:id="@+id/gradeE"
+            android:layout_width="124dp"
+            android:layout_height="47dp"
+            android:layout_marginEnd="216dp"
+            android:src="@drawable/grade_e"
+            android:scaleType="fitCenter"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tvPrediction"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
