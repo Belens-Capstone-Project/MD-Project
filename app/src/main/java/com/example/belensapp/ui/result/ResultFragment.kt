@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import android.content.Context
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
@@ -97,10 +98,12 @@ class ResultFragment : Fragment() {
     private fun loadImage(imageUri: Uri) {
         Glide.with(requireContext())
             .load(imageUri)
+            .skipMemoryCache(true)
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
             .placeholder(R.drawable.ic_camerafill)
             .error(R.drawable.ic_camerafill)
             .into(binding.ivImageResult)
-    }
+        }
 
     private fun loadDefaultImage() {
         Glide.with(requireContext())

@@ -207,7 +207,8 @@ class CameraFragment : Fragment() {
     }
 
     private fun bitmapToFile(bitmap: Bitmap): File {
-        val file = File(requireContext().cacheDir, "image.jpg")
+        val timestamp = System.currentTimeMillis()
+        val file = File(requireContext().cacheDir, "image_${timestamp}.jpg")
         file.createNewFile()
         val bos = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
