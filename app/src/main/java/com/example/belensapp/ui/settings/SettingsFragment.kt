@@ -210,19 +210,20 @@ class SettingsFragment : Fragment() {
             putString("selected_language", languageCode)
             apply()
         }
+
         val locale = java.util.Locale(languageCode)
         java.util.Locale.setDefault(locale)
         val config = requireContext().resources.configuration
         config.setLocale(locale)
         requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
+
         Toast.makeText(
             requireContext(),
             getString(R.string.language_changed_to) + " $languageCode",
             Toast.LENGTH_SHORT
         ).show()
-
-        findNavController().navigate(R.id.action_settingsFragment_self)
-    }
+        requireActivity().recreate()
+        }
 
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
