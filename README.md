@@ -1,4 +1,5 @@
 # BELENS MOBILE DEVELOPMENT
+<img width="1280" alt="Banner" src="https://github.com/user-attachments/assets/6e60dd56-0fa1-47cc-b04d-a65334ce8469" />
 
 ## Belens App
 
