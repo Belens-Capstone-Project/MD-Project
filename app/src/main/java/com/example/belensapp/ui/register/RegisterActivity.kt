@@ -52,7 +52,6 @@ class RegisterActivity : AppCompatActivity() {
         btnConfirmPasswordVisibility = findViewById(R.id.btnConfirmPasswordVisibility)
 
         makeStatusBarTransparent()
-
         val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         when (currentNightMode) {
             Configuration.UI_MODE_NIGHT_YES -> {
@@ -80,7 +79,6 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         setupPasswordVisibility()
-
         btnRegister.setOnClickListener {
             val email = etEmail.text.toString().trim()
             val username = etUsername.text.toString().trim()
@@ -90,9 +88,7 @@ class RegisterActivity : AppCompatActivity() {
             if (!validateInputs(email, username, password, confirmPassword)) {
                 return@setOnClickListener
             }
-
             showLoading(true)
-
             registerUser(username, email, password)
         }
     }
@@ -102,7 +98,6 @@ class RegisterActivity : AppCompatActivity() {
             window.statusBarColor = Color.TRANSPARENT
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
             if (currentNightMode == Configuration.UI_MODE_NIGHT_NO) {
@@ -140,19 +135,16 @@ class RegisterActivity : AppCompatActivity() {
             Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show()
             return false
         }
-
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.error = "Please enter a valid email address"
             etEmail.requestFocus()
             return false
         }
-
         if (password.length < 8) {
             etPassword.error = "Password must be at least 8 characters long"
             etPassword.requestFocus()
             return false
         }
-
         if (!password.matches(".*[A-Z].*".toRegex())) {
             etPassword.error = "Password must contain at least one uppercase letter"
             etPassword.requestFocus()
@@ -170,7 +162,6 @@ class RegisterActivity : AppCompatActivity() {
             etPassword.requestFocus()
             return false
         }
-
         if (password != confirmPassword) {
             etConfirmPassword.error = "Passwords do not match"
             etConfirmPassword.requestFocus()
@@ -186,7 +177,6 @@ class RegisterActivity : AppCompatActivity() {
                 if (task.isSuccessful) {
                     val firebaseUser = auth.currentUser
                     val userId = firebaseUser?.uid
-
                     userId?.let { uid ->
                         val user = hashMapOf(
                             "userId" to uid,

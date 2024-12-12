@@ -53,14 +53,12 @@ class WelcomeOneActivity : AppCompatActivity() {
         }
 
         val login = ObjectAnimator.ofFloat(binding.loginButtonOne, View.ALPHA, 1f).setDuration(100)
-
         val title = ObjectAnimator.ofFloat(binding.titleTextView, View.ALPHA, 1f).setDuration(100)
         val desc = ObjectAnimator.ofFloat(binding.descTextView, View.ALPHA, 1f).setDuration(100)
 
         val together = AnimatorSet().apply {
             playTogether(login)
         }
-
         AnimatorSet().apply {
             playSequentially(title, desc, together)
             start()

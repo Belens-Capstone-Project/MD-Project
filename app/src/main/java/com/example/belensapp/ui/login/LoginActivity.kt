@@ -50,7 +50,6 @@ class LoginActivity : AppCompatActivity() {
                     window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         }
-
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance("https://belensapp-8eff1-default-rtdb.asia-southeast1.firebasedatabase.app")
             .getReference("user")
@@ -79,7 +78,6 @@ class LoginActivity : AppCompatActivity() {
                 ivImagePreviewNight.visibility = View.VISIBLE
                 ivImagePreview.visibility = View.GONE
                 tvLoginTitle.setTextColor(Color.WHITE)
-
                 btnPasswordVisibility.imageTintList = ContextCompat.getColorStateList(this, R.color.nighttext)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -91,7 +89,6 @@ class LoginActivity : AppCompatActivity() {
                 ivImagePreviewNight.visibility = View.GONE
                 ivImagePreview.visibility = View.VISIBLE
                 tvLoginTitle.setTextColor(resources.getColor(R.color.red_gradient_end, theme))
-
                 btnPasswordVisibility.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -120,7 +117,6 @@ class LoginActivity : AppCompatActivity() {
         tvRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
-
         btnPasswordVisibility.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
             togglePasswordVisibility()
@@ -153,7 +149,6 @@ class LoginActivity : AppCompatActivity() {
                         database.child(user.uid).addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 val username = snapshot.child("username").getValue(String::class.java)
-
                                 val sharedPref = getSharedPreferences(Constants.PREF_NAME, MODE_PRIVATE)
                                 with(sharedPref.edit()) {
                                     putString(Constants.KEY_USER_TOKEN, user.uid)

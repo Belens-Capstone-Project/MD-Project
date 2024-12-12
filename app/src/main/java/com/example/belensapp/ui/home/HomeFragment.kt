@@ -45,7 +45,6 @@ class HomeFragment : Fragment() {
         val root: View = binding.root
 
         homeViewModel = ViewModelProvider(requireActivity()).get(HomeViewModel::class.java)
-
         apiService = ApiConfig.getApiService()
 
         val sharedPref = requireContext().getSharedPreferences(
@@ -54,22 +53,19 @@ class HomeFragment : Fragment() {
         )
         token = sharedPref.getString(Constants.KEY_USER_TOKEN, "") ?: ""
 
+
         initializeFirebase()
-
         setupRecyclerView()
-
         setupSearchView()
 
-        observeLoadingState()
 
+        observeLoadingState()
         if (homeViewModel.shouldRefreshData()) {
             fetchNews()
         }
 
         observeNewsData()
-
         updateThemeAppearance()
-
         loadProfileAndUsername()
 
         return root

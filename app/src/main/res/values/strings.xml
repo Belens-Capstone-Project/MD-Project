@@ -49,5 +49,8 @@
     <string name="logout_confirmation_message">Are you sure you want to logout?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+<<<<<<< HEAD
     <string name="hai">Hi %1$s</string>
+=======
+>>>>>>> 2379228ff7336242025d01380fc1ca01d99e0781
 </resources>

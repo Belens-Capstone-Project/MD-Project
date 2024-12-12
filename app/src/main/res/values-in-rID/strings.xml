@@ -50,5 +50,8 @@
     <string name="logout_confirmation_message">Apakah kamu yakin ingin keluar?</string>
     <string name="yes">Ya</string>
     <string name="no">Tidak</string>
+<<<<<<< HEAD
     <string name="hai">Hai %1$s</string>
+=======
+>>>>>>> 2379228ff7336242025d01380fc1ca01d99e0781
 </resources>

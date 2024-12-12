@@ -18,7 +18,6 @@ class HistoryViewModel : ViewModel() {
     val error: LiveData<String?> = _error
 
     private val database: DatabaseReference = FirebaseDatabase.getInstance().getReference("history")
-
     fun fetchHistory(userToken: String) {
         Log.d("HistoryViewModel", "Fetching history for token: $userToken")
 
@@ -86,7 +85,6 @@ class HistoryViewModel : ViewModel() {
 
     fun savePredictionHistory(userToken: String, predictResponse: PredictResponse) {
         val timestamp = System.currentTimeMillis()
-
         val historyData = mapOf(
             "timestamp" to timestamp,
             "data" to mapOf(

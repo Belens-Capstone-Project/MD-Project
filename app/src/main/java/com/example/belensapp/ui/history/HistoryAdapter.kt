@@ -1,5 +1,10 @@
 package com.example.belensapp.ui.history
 
+<<<<<<< HEAD
+=======
+import android.net.Uri
+import android.util.Log
+>>>>>>> 2379228ff7336242025d01380fc1ca01d99e0781
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +24,6 @@ class HistoryAdapter(private var historyList: List<PredictResponse>, private val
         fun bind(predictResponse: PredictResponse) {
             with(binding) {
                 tvPrediction.text = predictResponse.data?.prediction ?: "No prediction available"
-
                 val imageUrl = predictResponse.data?.fileUrl
                 Glide.with(ivImageHistory.context)
                     .load(imageUrl)
@@ -27,7 +31,6 @@ class HistoryAdapter(private var historyList: List<PredictResponse>, private val
                     .placeholder(R.drawable.ic_camera)
                     .error(R.drawable.ic_camera)
                     .into(ivImageHistory)
-
                 gradeA.visibility = View.GONE
                 gradeB.visibility = View.GONE
                 gradeC.visibility = View.GONE
@@ -59,7 +62,6 @@ class HistoryAdapter(private var historyList: List<PredictResponse>, private val
                         binding.root.strokeColor = binding.root.context.getColor(R.color.graywel)
                     }
                 }
-
                 itemView.setOnClickListener {
                     onItemClicked(predictResponse)
                 }

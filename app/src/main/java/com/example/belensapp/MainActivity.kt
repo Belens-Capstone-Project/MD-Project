@@ -28,12 +28,10 @@ class MainActivity : AppCompatActivity() {
             finish()
             return
         }
-
         if (!isUserLoggedIn()) {
             redirectToLogin()
             return
         }
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -41,7 +39,6 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         navView.setupWithNavController(navController)
     }
-
     fun setBottomNavigationVisibility(isVisible: Boolean) {
         navView.visibility = if (isVisible) View.VISIBLE else View.GONE
     }

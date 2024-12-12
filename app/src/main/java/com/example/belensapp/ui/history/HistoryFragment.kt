@@ -29,9 +29,7 @@ class HistoryFragment : Fragment() {
         val root: View = binding.root
 
         historyViewModel = ViewModelProvider(this).get(HistoryViewModel::class.java)
-
         binding.progressBar.visibility = View.VISIBLE
-
         historyAdapter = HistoryAdapter(emptyList()) { predictResponse ->
             val bundle = Bundle().apply {
                 putParcelable("predict_response", predictResponse)
@@ -57,7 +55,6 @@ class HistoryFragment : Fragment() {
             binding.progressBar.visibility = View.GONE
             return root
         }
-
         historyViewModel.error.observe(viewLifecycleOwner) { error ->
             error?.let {
                 binding.tvError.visibility = View.VISIBLE
@@ -65,7 +62,6 @@ class HistoryFragment : Fragment() {
                 binding.progressBar.visibility = View.GONE
             }
         }
-
         historyViewModel.historyList.observe(viewLifecycleOwner) { historyList ->
             binding.progressBar.visibility = View.GONE
             if (historyList.isEmpty()) {
@@ -76,7 +72,6 @@ class HistoryFragment : Fragment() {
                 historyAdapter.updateHistoryList(historyList)
             }
         }
-
         historyViewModel.fetchHistory(userToken)
 
         return root

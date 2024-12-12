@@ -67,7 +67,6 @@ class ResultFragment : Fragment() {
                     binding.tvPrediction.text = predictResponse?.data?.prediction ?: "Prediction not available"
 
                     displayNutritionData(predictResponse?.data?.gizi)
-
                     if (imageUriString != null) {
                         val imageUri = Uri.parse(imageUriString)
                         loadImage(imageUri)
@@ -121,7 +120,6 @@ class ResultFragment : Fragment() {
             userRef.get().addOnSuccessListener { snapshot ->
                 val currentScanCount = snapshot.getValue(Int::class.java) ?: 0
                 val newScanCount = currentScanCount + 1
-
                 userRef.setValue(newScanCount).addOnCompleteListener {
                     if (it.isSuccessful) {
                         Log.d("Firebase", "Scan count updated successfully: $newScanCount")
@@ -164,7 +162,6 @@ class ResultFragment : Fragment() {
                 newBadges.add("Healthy Expert")
             }
         }
-
         if (newBadges.isNotEmpty()) {
             showBadgeAchievementDialog(newBadges)
         }

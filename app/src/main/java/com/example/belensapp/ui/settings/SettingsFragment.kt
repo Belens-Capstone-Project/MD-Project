@@ -59,11 +59,9 @@ class SettingsFragment : Fragment() {
         settingsViewModel.text.observe(viewLifecycleOwner) {
             textView.text = it
         }
-
         setupDarkModeSwitch()
 
         updateIconColors()
-
         languageCard = binding.cardLanguage
         languageCard.setOnClickListener {
             showLanguageChangeDialog()
@@ -80,9 +78,7 @@ class SettingsFragment : Fragment() {
         }
 
         updateBadgeColors(0)
-
         loadProfilePhoto()
-
         loadScanCount()
         return root
     }
@@ -214,13 +210,11 @@ class SettingsFragment : Fragment() {
             putString("selected_language", languageCode)
             apply()
         }
-
         val locale = java.util.Locale(languageCode)
         java.util.Locale.setDefault(locale)
         val config = requireContext().resources.configuration
         config.setLocale(locale)
         requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
-
         Toast.makeText(
             requireContext(),
             getString(R.string.language_changed_to) + " $languageCode",
@@ -232,7 +226,6 @@ class SettingsFragment : Fragment() {
 
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
-
         val sharedPref = requireContext().getSharedPreferences("user_pref", AppCompatActivity.MODE_PRIVATE)
         with(sharedPref.edit()) {
             clear()
@@ -240,14 +233,12 @@ class SettingsFragment : Fragment() {
         }
 
         Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
-
         val intent = Intent(requireContext(), LoginActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         startActivity(intent)
-
         requireActivity().finish()
     }
 
@@ -263,7 +254,6 @@ class SettingsFragment : Fragment() {
                 if (snapshot.exists()) {
                     val username = snapshot.child("username").getValue(String::class.java) ?: "User"
                     binding.username.text = username
-
                     val photoUrl = snapshot.child("photoUrl").getValue(String::class.java)
                     if (!photoUrl.isNullOrEmpty()) {
                         Glide.with(requireContext())

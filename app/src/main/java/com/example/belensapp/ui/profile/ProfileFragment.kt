@@ -16,7 +16,6 @@ import com.example.belensapp.R
 import com.example.belensapp.ui.login.LoginActivity
 import com.example.belensapp.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
-
 class ProfileFragment : Fragment() {
 
     private lateinit var ivProfilePhoto: ImageView
@@ -29,7 +28,6 @@ class ProfileFragment : Fragment() {
 
     private var selectedPhotoUri: Uri? = null
     private val PICK_IMAGE_REQUEST = 1
-
     private lateinit var viewModel: ProfileViewModel
     private lateinit var auth: FirebaseAuth
 
@@ -38,19 +36,16 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
-
         viewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
         auth = FirebaseAuth.getInstance()
 
         initializeViews(view)
-
         val currentUser = auth.currentUser
         if (currentUser == null) {
             Toast.makeText(requireContext(), "You are not logged in", Toast.LENGTH_SHORT).show()
             startActivity(Intent(requireContext(), LoginActivity::class.java))
             return view
         }
-
         observeProfileData()
         observeUpdateResults()
 
@@ -90,8 +85,10 @@ class ProfileFragment : Fragment() {
             result.onSuccess { message ->
                 Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
 
-                val sharedPref = requireContext().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE)
-                sharedPref.edit().putString(Constants.KEY_USERNAME, etUsername.text.toString().trim()).apply()
+                val sharedPref =
+                    requireContext().getSharedPreferences(Constants.PREF_NAME, Context.MODE_PRIVATE)
+                sharedPref.edit()
+                    .putString(Constants.KEY_USERNAME, etUsername.text.toString().trim()).apply()
 
                 etCurrentPassword.text.clear()
                 etNewPassword.text.clear()
@@ -112,7 +109,8 @@ class ProfileFragment : Fragment() {
             val newPassword = etNewPassword.text.toString().takeIf { it.isNotEmpty() }
 
             if (username.isEmpty()) {
-                Toast.makeText(requireContext(), "Please enter a username", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Please enter a username", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 

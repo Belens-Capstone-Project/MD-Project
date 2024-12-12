@@ -81,13 +81,11 @@ class DetailHistoryFragment : Fragment() {
             append("Garam (mg): ${gizi.garam ?: "N/A"}\n")
         }
         binding.tvGizi.text = giziText
-
         binding.recomendation.text = gizi.rekomendasi ?: "No recommendation available"
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-
         (activity as? MainActivity)?.setBottomNavigationVisibility(true)
 
         _binding = null

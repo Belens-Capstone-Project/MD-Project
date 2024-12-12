@@ -59,8 +59,6 @@ class CameraFragment : Fragment() {
         binding.btnTakePhoto.setOnClickListener { openCamera() }
         binding.btnUploadPhoto.setOnClickListener { openGallery() }
         binding.btnProcess.setOnClickListener { processImage() }
-
-
         updateThemeAppearance()
 
         return binding.root
@@ -73,7 +71,6 @@ class CameraFragment : Fragment() {
                 binding.btnTakePhoto.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
                 binding.btnUploadPhoto.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
                 binding.btnProcess.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-
                 binding.btnTakePhoto.iconTint = ContextCompat.getColorStateList(requireContext(), R.color.black)
                 binding.btnUploadPhoto.iconTint = ContextCompat.getColorStateList(requireContext(), R.color.black)
             }
@@ -164,11 +161,9 @@ class CameraFragment : Fragment() {
         })
     }
 
-
     private fun showLoading(isLoading: Boolean) {
         activity?.runOnUiThread {
             progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-
             binding.btnProcess.isEnabled = !isLoading
             binding.btnTakePhoto.isEnabled = !isLoading
             binding.btnUploadPhoto.isEnabled = !isLoading

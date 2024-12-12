@@ -35,7 +35,6 @@ class NewsAdapter(
 
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
         val newsItem = newsList[position]
-
         if (!newsItem.imageUrl.isNullOrEmpty()) {
             Glide.with(holder.itemView.context)
                 .load(newsItem.imageUrl)
@@ -45,7 +44,6 @@ class NewsAdapter(
         } else {
             holder.imageView.setImageResource(R.drawable.ic_image)
         }
-
         holder.textView.text = newsItem.title
     }
 
